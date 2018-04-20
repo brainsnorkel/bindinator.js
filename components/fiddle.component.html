@@ -232,10 +232,9 @@ of awesome that this works at all.
     }
     b8r.empty(container);
     last_code = source;
-    const c = await b8r.makeComponent('fiddle-' + uuid(), source, b8r._path ? `${b8r._path}/` : '');
     if (source.match(/<\w+[^<>]*>/)) {
       b8r.insertComponent(
-        c,
+        b8r.makeComponent('fiddle-' + uuid(), source, b8r._path ? `${b8r._path}/` : ''),
         container
       );
     } else {

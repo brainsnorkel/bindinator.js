@@ -141,7 +141,7 @@ const get_component = name => new Promise((resolve, reject) => {
   }
 });
 
-async function makeComponent (name, source, url, preserve_source) { // jshint ignore:line
+function makeComponent (name, source, url, preserve_source) { // jshint ignore:line
   let css = false, content, script = false, parts, remains;
 
   // nothing <style> css </style> rest-of-component
@@ -226,7 +226,7 @@ async function makeComponent (name, source, url, preserve_source) { // jshint ig
       async_update(false, element);
     }
   });
-  await after_update();
+  // await after_update();
   return component;
 }
 
@@ -252,14 +252,14 @@ async function component (name, url, preserve_source) { // jshint ignore:line
     }
     try {
       const source = await ajax(`${url}.component.html`); // jshint ignore:line
-      await makeComponent(name, source, url, preserve_source);
+      makeComponent(name, source, url, preserve_source); //
     }
     catch(err) {
       console.error(err, `failed to load component ${url}`);
       delete component_promises[name];
     }
   }
-  await after_update();
+  await after_update(); // jshint ignore:line
   return components[name];
 }
 
