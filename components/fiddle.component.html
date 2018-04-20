@@ -224,7 +224,7 @@ of awesome that this works at all.
   }
 
   let last_code = '';
-  function run() {
+  async function run() {
     const source = editor ? editor.getValue() : code_elt.textContent;
 
     if (last_code === source.trim()) {
@@ -232,9 +232,10 @@ of awesome that this works at all.
     }
     b8r.empty(container);
     last_code = source;
+    const c = await b8r.makeComponent('fiddle-' + uuid(), source, b8r._path ? `${b8r._path}/` : '');
     if (source.match(/<\w+[^<>]*>/)) {
       b8r.insertComponent(
-        b8r.makeComponent('fiddle-' + uuid(), source, b8r._path ? `${b8r._path}/` : ''),
+        c,
         container
       );
     } else {
