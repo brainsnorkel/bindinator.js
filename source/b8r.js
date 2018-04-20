@@ -64,15 +64,13 @@ const {
   splitPaths,
 } = require('./b8r.bindings.js');
 Object.assign(b8r, {addDataBinding, removeDataBinding, getDataPath, getComponentId, getListInstancePath});
-const { saveDataForElement, dataForElement } =
-  require('./b8r.dataForElement.js');
-const {onAny, offAny, anyListeners} =
-    require('./b8r.anyEvent.js');
+const {onAny, offAny, anyListeners} = require('./b8r.anyEvent.js');
 Object.assign(b8r, { onAny, offAny, anyListeners });
 Object.assign(b8r, require('./b8r.registry.js'));
 b8r.observe(
-    () => true,
-            (path, source_element) => b8r.touchByPath(path, source_element));
+  () => true,
+  (path, source_element) => b8r.touchByPath(path, source_element)
+);
 const { keystroke, modifierKeys } = require('./b8r.keystroke.js');
 b8r.keystroke = keystroke;
 b8r.modifierKeys = modifierKeys;
@@ -601,9 +599,9 @@ const _path_relative_b8r = _path => {
 };
 
 const {
+  get_component,
   component,
   components,
-  component_timeouts,
   component_preload_list,
   makeComponent
 } = require('./b8r.component.js');
@@ -634,7 +632,7 @@ const getData = element => {
 
 let component_count = 0;
 const _component_instances = {};
-b8r.insertComponent = function(component, element, data) {
+b8r.insertComponent = async function(component, element, data) { // jshint ignore:line
   const data_path = typeof data === 'string' ? data : b8r.getDataPath(element);
   if (!element) {
     element = b8r.create('div');
@@ -642,26 +640,14 @@ b8r.insertComponent = function(component, element, data) {
     return;
   }
   if (typeof component === 'string') {
-    if (!components[component]) {
-      if (!component_timeouts[component]) {
-        // if this doesn't happen for five seconds, we have a problem
-        component_timeouts[component] = setTimeout(
-          () => console.error('component timed out: ', component), 5000);
-      }
-      if (data) {
-        saveDataForElement(element, data);
-      }
-      element.dataset.component = component;
-      return;
-    }
-    component = components[component];
+    component = await get_component(component); // jshint ignore:line
   }
   b8r.logStart('insertComponent', component.name);
   if (element.dataset.component) {
     delete element.dataset.component;
   }
   if (!data || data_path) {
-    data = dataForElement(element) || getData(element) || {};
+    data = getData(element) || {};
   }
   if (element.parentElement === null) {
     document.body.appendChild(element);
@@ -725,7 +711,7 @@ b8r.insertComponent = function(component, element, data) {
     const touch = path => b8r.touchByPath(component_id, path);
     b8r.register(component_id, data, true);
     try {
-      component.load(
+      await component.load( // jshint ignore:line
         require.relative(component.path),
         element, _path_relative_b8r(component.path), selector => b8r.findWithin(element, selector),
         selector => b8r.findOneWithin(element, selector), data, register,
@@ -744,7 +730,7 @@ b8r.insertComponent = function(component, element, data) {
   async_update(false, element);
 
   b8r.logEnd('insertComponent', component.name);
-};
+}; // jshint ignore:line
 
 b8r.wrapWithComponent = (component, element, data, attributes) => {
   const wrapper = b8r.create('div');

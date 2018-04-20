@@ -21,6 +21,7 @@ pass a callback to `after_update`:
 
 after_update fires immediately (and synchronously) if there are no pending updates.
 */
+/* global require, console, module */
 'use strict';
 
 const _change_list = [];
@@ -100,15 +101,23 @@ const async_update = (path, source) => {
   logEnd('async_update', 'queue');
 };
 
-const after_update = callback => {
-  if (_update_list.length) {
-    if (_after_update_callbacks.indexOf(callback) === -1) {
-      _after_update_callbacks.push(callback);
+async function after_update (callback) { // jshint ignore:line
+  // we need to wait for changes triggered via touch to add to the update list
+  await new Promise(resolve => requestAnimationFrame(resolve)); // jshint ignore:line
+  return new Promise(resolve => {
+    if (_update_list.length) {
+      if (_after_update_callbacks.indexOf(callback) === -1) {
+        _after_update_callbacks.push(() => {
+          if (callback) callback();
+          resolve();
+        });
+      }
+    } else {
+      if (callback) callback();
+      resolve();
     }
-  } else {
-    callback();
-  }
-};
+  });
+}
 
 const touchElement = element => async_update(false, element);
 

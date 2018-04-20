@@ -113,19 +113,35 @@ If you want to force a cleanup, you can call:
 If a component has a property named `destroy` (and it's a method) it will
 be called just before the instance is removed from the registry.
 */
-/* global require, module */
+/* global require, module, console */
 'use strict';
 
 const components = {};
 const component_timeouts = [];
 const component_promises = {};
 const component_preload_list = [];
-const {async_update} = require('./b8r.update.js');
+const {async_update, after_update} = require('./b8r.update.js');
 const {create, find, findWithin} = require('./b8r.dom.js');
 const {ajax} = require('./b8r.ajax.js');
 const makeStylesheet = require('./b8r.makeStylesheet.js');
+const AsyncFunction = (async function(){}).constructor; // jshint ignore: line
 
-const makeComponent = function(name, source, url, preserve_source) {
+const waiting_list = {}; // component_name: [ list of {resolve, reject} ]
+const get_component = name => new Promise((resolve, reject) => {
+  if (components[name]) {
+    resolve(components[name]);
+  } else if (!waiting_list[name]) {
+    component_timeouts[name] = setTimeout(
+      () => console.error('get_component timed out: ', name),
+      5000
+    );
+    waiting_list[name] = [{resolve, reject}];
+  } else {
+    waiting_list[name].push({resolve, reject});
+  }
+});
+
+async function makeComponent (name, source, url, preserve_source) { // jshint ignore:line
   let css = false, content, script = false, parts, remains;
 
   // nothing <style> css </style> rest-of-component
@@ -150,7 +166,7 @@ const makeComponent = function(name, source, url, preserve_source) {
   let load = () => console.error('component', name, 'cannot load properly');
   try {
     load = script ?
-             new Function(
+             new AsyncFunction(
                 'require',
                 'component',
                 'b8r',
@@ -187,9 +203,6 @@ const makeComponent = function(name, source, url, preserve_source) {
   if (preserve_source) {
     component._source = source;
   }
-  if (component_timeouts[name]) {
-    clearInterval(component_timeouts[name]);
-  }
   if (components[name]) {
     // don't want to leak stylesheets
     if (components[name].style) {
@@ -199,6 +212,13 @@ const makeComponent = function(name, source, url, preserve_source) {
   }
   components[name] = component;
 
+  if (waiting_list[name]) {
+    waiting_list[name].forEach(({resolve}) => resolve(component));
+    clearInterval(component_timeouts[name]);
+    delete waiting_list[name];
+    delete component_timeouts[name];
+  }
+
   find(`[data-component="${name}"]`).forEach(element => {
     // somehow things can happen in between find() and here so the
     // second check is necessary to prevent race conditions
@@ -206,8 +226,9 @@ const makeComponent = function(name, source, url, preserve_source) {
       async_update(false, element);
     }
   });
+  await after_update();
   return component;
-};
+}
 
 // copied from require.js
 // path/to/../foo -> path/foo
@@ -218,37 +239,34 @@ const collapse = path => {
   return path;
 };
 
-const component = (name, url, preserve_source) => {
+async function component (name, url, preserve_source) { // jshint ignore:line
   if (url === undefined) {
     url = name;
     name = url.split('/').pop();
   }
-  if (!component_promises[name] || preserve_source) {
+  if (!components[name] || (preserve_source && ! components[name]._source)) {
     url = collapse(url);
-    component_promises[name] = new Promise(function(resolve, reject) {
-      if (components[name] && !preserve_source) {
-        resolve(components[name]);
-      } else {
-        if (component_preload_list.indexOf(url) === -1) {
-          component_preload_list.push(url);
-        }
-        ajax(`${url}.component.html`)
-        .then(source => resolve(makeComponent(name, source, url, preserve_source)))
-        .catch(err => {
-          delete component_promises[name];
-          console.error(err, `failed to load component ${url}`);
-          reject(err);
-        });
-      }
-    });
+
+    if (component_preload_list.indexOf(url) === -1) {
+      component_preload_list.push(url);
+    }
+    try {
+      const source = await ajax(`${url}.component.html`); // jshint ignore:line
+      await makeComponent(name, source, url, preserve_source);
+    }
+    catch(err) {
+      console.error(err, `failed to load component ${url}`);
+      delete component_promises[name];
+    }
   }
-  return component_promises[name];
-};
+  await after_update();
+  return components[name];
+}
 
 module.exports = {
+  get_component,
   component,
   components,
-  component_timeouts,
   component_preload_list,
   makeComponent,
 };

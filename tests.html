@@ -100,205 +100,214 @@
   <div class="report"></div>
   <script src="lib/require.js"></script>
   <script>
+    /* global require */
     'use strict';
-    const b8r = require('source/b8r.js');
-    const Test = require('lib/test.js');
-    const {getByPath, setByPath} = require('source/b8r.byPath.js');
+    (async function () { // jshint ignore:line
+      const b8r = require('source/b8r.js');
+      const Test = require('lib/test.js');
+      const {getByPath, setByPath} = require('source/b8r.byPath.js');
+      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    Test.setReportContainer(b8r.findOne('.report'));
-  /*
-    Test(() => 2).shouldBe(2);
-    Test(() => 2).shouldBe(1);
-  */
-    var obj = {
-      base: 17,
-      sub: {
-        list: [1,2,3],
-        prop: 'hello'
-      },
-      list: [
-        {x: 10, y: 11},
-        {x: 12, y: 13},
-        {x: 'y=z', y: Math.PI}
-      ],
-      complex_list: [
-        {id: -3, foo: {bar: 'baz'}},
-        {id: 42, foo: {bar: 'lurman'}},
-      ],
-      color: 'red',
-      type: 'range',
-      nested_list: [
-        [4,5,6],
-        [7,8,9]
-      ],
-      id_list: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}, {id: 'C', label: 'C'}, {id: 'A', label: 'bogus A'}],
-      obj_list: {
-      	a: {label: 'object.a'},
-      	b: {label: 'object.b'},
-      	c: {label: 'object.c'},
-      },
-      option: '3',
-      checkbox: true,
-      radio: 'second',
-      bind_path: 'test1.complex_list[id=-3].foo',
-    };
-    b8r.makeComponent('show-bar', `<span data-bind="text=_data_.bar">xxx</span>`, 'testy');
-    Test(() => getByPath(obj, '')).shouldBe(obj);
-    Test(() => getByPath(obj, '/')).shouldBe(obj);
-    Test(() => getByPath(obj, 'base')).shouldBe(obj.base);
-    Test(() => getByPath(obj, 'sub.prop')).shouldBe(obj.sub.prop);
-    Test(() => getByPath(obj, 'sub.list')).shouldBe(obj.sub.list);
-    Test(() => getByPath(obj, 'sub.list[1]')).shouldBe(obj.sub.list[1]);
-    Test(() => getByPath(obj, 'list[1].x')).shouldBe(obj.list[1].x);
-    Test(() => getByPath(obj, 'nested_list[1][1]')).shouldBe(obj.nested_list[1][1]);
-    Test(() => getByPath(obj, 'list[x=12]')).shouldBe(obj.list[1]);
-    Test(() => getByPath(obj, 'list[x=y=z]')).shouldBe(obj.list[2]);
-    setByPath(obj, 'base', 42);
-    setByPath(obj, 'kettle.black', 11);
-    b8r.force_update();
-    Test(() => getByPath(obj, 'base')).shouldBe(obj.base);
-    Test(() => getByPath(obj, 'kettle.black')).shouldBe(obj.kettle.black);
-    setByPath(obj, 'sub.list[2]', 25);
-    b8r.force_update();
-    Test(() => getByPath(obj, 'sub.list[2]')).shouldBe(obj.sub.list[2]);
+      Test.setReportContainer(b8r.findOne('.report'));
+    /*
+      Test(() => 2).shouldBe(2);
+      Test(() => 2).shouldBe(1);
+    */
+      var obj = {
+        base: 17,
+        sub: {
+          list: [1,2,3],
+          prop: 'hello'
+        },
+        list: [
+          {x: 10, y: 11},
+          {x: 12, y: 13},
+          {x: 'y=z', y: Math.PI}
+        ],
+        complex_list: [
+          {id: -3, foo: {bar: 'baz'}},
+          {id: 42, foo: {bar: 'lurman'}},
+        ],
+        color: 'red',
+        type: 'range',
+        nested_list: [
+          [4,5,6],
+          [7,8,9]
+        ],
+        id_list: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}, {id: 'C', label: 'C'}, {id: 'A', label: 'bogus A'}],
+        obj_list: {
+          a: {label: 'object.a'},
+          b: {label: 'object.b'},
+          c: {label: 'object.c'},
+        },
+        option: '3',
+        checkbox: true,
+        radio: 'second',
+        bind_path: 'test1.complex_list[id=-3].foo',
+      };
+      await b8r.makeComponent('show-bar', `<span data-bind="text=_data_.bar">xxx</span>`, '');
+      Test(() => getByPath(obj, '')).shouldBe(obj);
+      Test(() => getByPath(obj, '/')).shouldBe(obj);
+      Test(() => getByPath(obj, 'base')).shouldBe(obj.base);
+      Test(() => getByPath(obj, 'sub.prop')).shouldBe(obj.sub.prop);
+      Test(() => getByPath(obj, 'sub.list')).shouldBe(obj.sub.list);
+      Test(() => getByPath(obj, 'sub.list[1]')).shouldBe(obj.sub.list[1]);
+      Test(() => getByPath(obj, 'list[1].x')).shouldBe(obj.list[1].x);
+      Test(() => getByPath(obj, 'nested_list[1][1]')).shouldBe(obj.nested_list[1][1]);
+      Test(() => getByPath(obj, 'list[x=12]')).shouldBe(obj.list[1]);
+      Test(() => getByPath(obj, 'list[x=y=z]')).shouldBe(obj.list[2]);
+      setByPath(obj, 'base', 42);
+      setByPath(obj, 'kettle.black', 11);
+      b8r.force_update();
+      Test(() => getByPath(obj, 'base')).shouldBe(obj.base);
+      Test(() => getByPath(obj, 'kettle.black')).shouldBe(obj.kettle.black);
+      setByPath(obj, 'sub.list[2]', 25);
+      b8r.force_update();
+      Test(() => getByPath(obj, 'sub.list[2]')).shouldBe(obj.sub.list[2]);
 
-    // binding (to), data mounting
-    b8r.register('test1', obj);
-    b8r.force_update();
-    Test(() => b8r.id('a').textContent).shouldBe('42');
-    Test(() => b8r.id('b').textContent).shouldBe('hello');
-    Test(() => b8r.id('c').textContent).shouldBe(obj.sub.list[2] + '');
-    Test(() => b8r.id('d').textContent).shouldBe('11');
-    Test(() => b8r.id('e').value).shouldBe(obj.sub.list[2] + '');
-    Test(() => b8r.id('a').style.color).shouldBe('red');
-    Test(() => b8r.id('e').getAttribute('type')).shouldBe('range');
+      // binding (to), data mounting
+      b8r.register('test1', obj);
+      b8r.force_update();
+      Test(() => b8r.id('a').textContent).shouldBe('42');
+      Test(() => b8r.id('b').textContent).shouldBe('hello');
+      Test(() => b8r.id('c').textContent).shouldBe(obj.sub.list[2] + '');
+      Test(() => b8r.id('d').textContent).shouldBe('11');
+      Test(() => b8r.id('e').value).shouldBe(obj.sub.list[2] + '');
+      Test(() => b8r.id('a').style.color).shouldBe('red');
+      Test(() => b8r.id('e').getAttribute('type')).shouldBe('range');
 
-    Test(() => b8r.id('complex-list').querySelectorAll('li')[1].textContent, 'explicitly setting data-path for component').shouldBe('lurman');
-    Test(() => b8r.id('indirect-bind').textContent, 'indirect binding via data_path toTarget').shouldBe('baz');
+      await b8r.after_update();
+      Test(
+        () => b8r.id('complex-list').querySelectorAll('li')[1].textContent,
+        'explicitly setting data-path for component'
+      ).shouldBe('lurman');
+      Test(
+        () => b8r.id('indirect-bind').textContent,
+        'indirect binding via data_path toTarget'
+      ).shouldBe('baz');
 
+      b8r.register('test2', {color: 'green'});
+      b8r.force_update();
+      Test(() => b8r.id('b').style.color).shouldBe('green');
 
-    b8r.register('test2', {color: 'green'});
-    b8r.force_update();
-    Test(() => b8r.id('b').style.color).shouldBe('green');
+      Test(
+        () => b8r.findOne('[data-list-instance="test1.list[_auto_=2]"] span').textContent
+      ).shouldBe('12');
 
-    Test(() => b8r.findOne('[data-list-instance="test1.list[_auto_=2]"] span').textContent).shouldBe('12');
+      // binding (from)
+      b8r.findOne('input').value = 55;
+      Test.trigger('input', b8r.findOne('input'));
+      b8r.force_update();
+      Test(() => b8r.id('e').value)
+                         .shouldBe(obj.sub.list[2] + '');
+      Test(() => b8r.id('c').textContent)
+                         .shouldBe(obj.sub.list[2] + '');
+      b8r.setByPath('test2', 'color', 'purple');
+      b8r.force_update();
+      Test(() => b8r.id('b').style.color).shouldBe('purple');
+      b8r.findOne('select').value = 'two';
+      Test.trigger('change', 'select');
+      Test(() => obj.option).shouldBe('two');
+      b8r.findOne('[type=checkbox]').checked = false;
+      Test.trigger('input', '[type=checkbox]');
+      Test(() => obj.checkbox).shouldBe(false);
 
-    // binding (from)
-    b8r.findOne('input').value = 55;
-    Test.trigger('input', b8r.findOne('input'));
-    b8r.force_update();
-    Test(() => b8r.id('e').value)
-                       .shouldBe(obj.sub.list[2] + '');
-    Test(() => b8r.id('c').textContent)
-                       .shouldBe(obj.sub.list[2] + '');
-    b8r.setByPath('test2', 'color', 'purple');
-    b8r.force_update();
-    Test(() => b8r.id('b').style.color).shouldBe('purple');
-    b8r.findOne('select').value = 'two';
-    Test.trigger('change', 'select');
-    Test(() => obj.option).shouldBe('two');
-    b8r.findOne('[type=checkbox]').checked = false;
-    Test.trigger('input', '[type=checkbox]');
-    Test(() => obj.checkbox).shouldBe(false);
+      // verify type-matching
+      obj.checkbox = false;
+      b8r.findOne('[type=checkbox]').checked = true;
+      Test.trigger('input', '[type=checkbox]');
+      Test(() => obj.checkbox).shouldBe(true);
+      b8r.findOne('[type=radio][value=first]').checked = true;
+      Test.trigger('change', '[type=radio][value=first]');
+      Test(() => obj.radio).shouldBe('first');
 
-    // verify type-matching
-    obj.checkbox = false;
-    b8r.findOne('[type=checkbox]').checked = true;
-    Test.trigger('input', '[type=checkbox]');
-    Test(() => obj.checkbox).shouldBe(true);
-    b8r.findOne('[type=radio][value=first]').checked = true;
-    Test.trigger('change', '[type=radio][value=first]');
-    Test(() => obj.radio).shouldBe('first');
+      // ajax methods
+      b8r.ajax('test/test.txt', 'GET').then(ajax_data => Test(() => ajax_data).shouldBe('esteban'));
+      {
+        var failures = 0;
+        b8r.ajax('test/does-not-exist.txt', 'GET')
+          .then(() => {}, () => failures++)
+          .then(() => Test(() => failures).shouldBe(1));
+      }
+      b8r.json('test/test.json', 'GET')
+        .then(data => Test(() => data.bar.baz[1].foo).shouldBe('BAZ'));
+      {
+        // loads malformed response, should reject with error
+        let failures = 0;
+        b8r.json('test/malformed.json', 'GET')
+          .then(() => {}, () => failures++)
+          .then(() => Test(() => failures).shouldBe(1));
+      }
+      {
+        // loads empty response, resolves with valid JSON "null" string
+        let failures = 0;
+        b8r.json('test/empty.json', 'GET')
+          .then(() => {}, () => failures++)
+          .then(() => Test(() => failures).shouldBe(0));
+      }
 
-    // ajax methods
-    b8r.ajax('test/test.txt', 'GET').then(ajax_data => Test(() => ajax_data).shouldBe('esteban'));
-    {
-      var failures = 0;
-      b8r.ajax('test/does-not-exist.txt', 'GET')
-        .then(() => {}, () => failures++)
-        .then(() => Test(() => failures).shouldBe(1));
-    }
-    b8r.json('test/test.json', 'GET')
-      .then(data => Test(() => data.bar.baz[1].foo).shouldBe('BAZ'));
-    {
-      // loads malformed response, should reject with error
-      let failures = 0;
-      b8r.json('test/malformed.json', 'GET')
-        .then(() => {}, () => failures++)
-        .then(() => Test(() => failures).shouldBe(1));
-    }
-    {
-      // loads empty response, resolves with valid JSON "null" string
-      let failures = 0;
-      b8r.json('test/empty.json', 'GET')
-        .then(() => {}, () => failures++)
-        .then(() => Test(() => failures).shouldBe(0));
-    }
-
-    // method to and from targets
-    b8r.register('method_binding', {
-      test: (elt, value) => {
-        if (value) {
-          const [first,second] = value.split(',');
-          elt.setAttribute('first', first);
-          elt.setAttribute('second', second);
-        } else {
-          return elt.getAttribute('first') + ',' + elt.getAttribute('second');
-        }
-      },
-      val: 'A,B',
-    });
-    let elt = b8r.id('method_binding');
-    b8r.force_update();
-    Test(() => elt.getAttribute('first')).shouldBe('A');
-    b8r.setByPath('method_binding', 'val', 'C,D');
-    b8r.force_update();
-    Test(() => elt.getAttribute('second')).shouldBe('D');
-    elt.setAttribute('second', 'Q');
-    b8r.trigger('change', elt);
-    Test(() => b8r.getByPath('method_binding', 'val')).shouldBe('C,Q');
-
-    function computed_color(name) {
-      var p = b8r.create(p);
-      p.style.color = name;
-      p.style.display = 'none';
-      document.body.appendChild(p);
-      var computed = window.getComputedStyle(p).color;
-      document.body.removeChild(p);
-      return computed;
-    }
-
-    // async updates
-    b8r.set('test1.base', 86);
-    Test(() => b8r.id('a').textContent, 'Async Update is actually asynchronous').shouldNotBe('86');
-    b8r.force_update();
-    Test(() => b8r.id('a').textContent, 'Async Update after_update').shouldBe('86');
-
-    b8r.register('empty_obj', {});
-    b8r.set('empty_obj.array[id=5]', {id: 5, name: 'fred'});
-    b8r.set('empty_obj.array[3]', {id:17, name: 'bloggs'});
-    b8r.set('empty_obj.x.y', {id: 5, name: 'fred'});
-    Test(() => b8r.get('empty_obj.array[0].name'), 'automatic array insertion by id path').shouldBe('fred');
-    Test(() => b8r.get('empty_obj.array[id=17].name'), 'array insertion by index').shouldBe('bloggs');
-    Test(() => b8r.get('empty_obj.x.y.id'), 'object insertion by path').shouldBe(5);
-
-    // components
-    b8r.component('test', 'test/test')
-      .then(() => {
-        b8r.force_update();
-        Test(() => b8r.findOne('.test-component p').textContent, 'Component loaded')
-          .shouldBe('This is a test');
-        Test(() => b8r.findOne('.test-component input').value, 'Component bound')
-          .shouldBe('55');
-        Test(() => window.getComputedStyle(b8r.findOne('.test-component > h2')).backgroundColor, 'Component stylesheet inserted')
-          .shouldBe(computed_color('purple'));
-        Test(() => window.getComputedStyle(b8r.findOne('h2')).backgroundColor, 'Component stylesheet did not "leak"')
-            .shouldBe(window.getComputedStyle(document.body).backgroundColor);
-        Test(() => b8r.findOne('.test-component h2').textContent, 'Component script ran')
-          .shouldBe('Set on load');
-        Test(() => b8r.find('.test-component [data-children] p').length, 'Component received children')
-          .shouldBe(2);
-        Test(() => b8r.find('.bad-list[data-list-instance]').length).shouldBe(3);
+      // method to and from targets
+      b8r.register('method_binding', {
+        test: (elt, value) => {
+          if (value) {
+            const [first,second] = value.split(',');
+            elt.setAttribute('first', first);
+            elt.setAttribute('second', second);
+          } else {
+            return elt.getAttribute('first') + ',' + elt.getAttribute('second');
+          }
+        },
+        val: 'A,B',
       });
+      let elt = b8r.id('method_binding');
+      b8r.force_update();
+      Test(() => elt.getAttribute('first')).shouldBe('A');
+      b8r.setByPath('method_binding', 'val', 'C,D');
+      b8r.force_update();
+      Test(() => elt.getAttribute('second')).shouldBe('D');
+      elt.setAttribute('second', 'Q');
+      b8r.trigger('change', elt);
+      Test(() => b8r.getByPath('method_binding', 'val')).shouldBe('C,Q');
+
+      const computed_color = name => {
+        var p = b8r.create(p);
+        p.style.color = name;
+        p.style.display = 'none';
+        document.body.appendChild(p);
+        var computed = window.getComputedStyle(p).color;
+        document.body.removeChild(p);
+        return computed;
+      };
+
+      // async updates
+      b8r.set('test1.base', 86);
+      Test(() => b8r.id('a').textContent, 'Async Update is actually asynchronous').shouldNotBe('86');
+      b8r.force_update();
+      Test(() => b8r.id('a').textContent, 'Async Update after_update').shouldBe('86');
+
+      b8r.register('empty_obj', {});
+      b8r.set('empty_obj.array[id=5]', {id: 5, name: 'fred'});
+      b8r.set('empty_obj.array[3]', {id:17, name: 'bloggs'});
+      b8r.set('empty_obj.x.y', {id: 5, name: 'fred'});
+      Test(() => b8r.get('empty_obj.array[0].name'), 'automatic array insertion by id path').shouldBe('fred');
+      Test(() => b8r.get('empty_obj.array[id=17].name'), 'array insertion by index').shouldBe('bloggs');
+      Test(() => b8r.get('empty_obj.x.y.id'), 'object insertion by path').shouldBe(5);
+
+      // components
+      await b8r.component('test', 'test/test'); // jshint ignore:line
+      Test(() => b8r.findOne('.test-component p').textContent, 'Component loaded')
+        .shouldBe('This is a test');
+      Test(() => b8r.findOne('.test-component input').value, 'Component bound')
+        .shouldBe('55');
+      Test(() => window.getComputedStyle(b8r.findOne('.test-component > h2')).backgroundColor, 'Component stylesheet inserted')
+        .shouldBe(computed_color('purple'));
+      Test(() => window.getComputedStyle(b8r.findOne('h2')).backgroundColor, 'Component stylesheet did not "leak"')
+          .shouldBe(window.getComputedStyle(document.body).backgroundColor);
+      Test(() => b8r.findOne('.test-component h2').textContent, 'Component script ran')
+        .shouldBe('Set on load');
+      Test(() => b8r.find('.test-component [data-children] p').length, 'Component received children')
+        .shouldBe(2);
+      Test(() => b8r.find('.bad-list[data-list-instance]').length).shouldBe(3);
+    }()); // jshint ignore:line
   </script>
 </body>
